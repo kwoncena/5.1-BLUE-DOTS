@@ -1,96 +1,92 @@
+// Select the SVG container
+const svg = d3.select("svg");
 
-        // Datasets
-        const datasets = [
-            [
-                { x: 50, y: 50, label: "Point A" },
-                { x: 150, y: 150, label: "Point B" },
-                { x: 250, y: 250, label: "Point C" },
-                { x: 350, y: 350, label: "Point D" },
-                { x: 450, y: 450, label: "Point E" }
-            ],
-            [
-                { x: 50, y: 50, r: 10, label: "Point A" },
-                { x: 150, y: 50, r: 20, label: "Point B" },
-                { x: 250, y: 50, r: 30, label: "Point C" },
-                { x: 350, y: 50, r: 40, label: "Point D" },
-                { x: 450, y: 50, r: 50, label: "Point E" }
-            ],
-            [
-                { x: 50, y: 50, r: 10, label: "Point A" },
-                { x: 50, y: 150, r: 20, label: "Point B" },
-                { x: 50, y: 250, r: 30, label: "Point C" },
-                { x: 50, y: 350, r: 40, label: "Point D" },
-                { x: 50, y: 450, r: 50, label: "Point E" }
-            ],
-            [
-                { x: 50, y: 450, r: 10, label: "Point A" },
-                { x: 150, y: 450, r: 20, label: "Point B" },
-                { x: 250, y: 450, r: 30, label: "Point C" },
-                { x: 350, y: 450, r: 40, label: "Point D" },
-                { x: 450, y: 450, r: 10, label: "Point E" }
-            ],
-            [
-                { x: 450, y: 50, r: 10, label: "Point A" },
-                { x: 450, y: 150, r: 40, label: "Point B" },
-                { x: 450, y: 250, r: 30, label: "Point C" },
-                { x: 450, y: 350, r: 20, label: "Point D" },
-                { x: 450, y: 450, r: 10, label: "Point E" }
-            ]
-        ];
+// Array of shades of blue for the circles
+const blueShades = ["#add8e6", "#87cefa", "#6495ed", "#4682b4", "#4169e1"];
 
-        // Array of shades of blue for the circles
-        const blueShades = ["#add8e6", "#87cefa", "#6495ed", "#4682b4", "#4169e1"];
+// Function to create circles randomly over the screen
+function createRandomCircles(svg) {
+    // Random number of circles between 10 to 20
+    const numberOfCircles = Math.floor(Math.random() * 10) + 10;
 
-        // List of currently active SVGs
-        const activeSVGs = [];
+    // Generate circles with random positions and sizes
+    const circlesData = Array.from({ length: numberOfCircles }, () => ({
+        x: Math.random() * 1000, // Random x-coordinate within viewBox
+        y: Math.random() * 1000, // Random y-coordinate within viewBox
+        r: Math.random() * 50 + 10, // Random radius between 10 and 60
+        color: blueShades[Math.floor(Math.random() * blueShades.length)]
+    }));
 
-        // Function to create and randomly position SVG
-        function createSVGWithData(data) {
-            // Random positioning for the SVG
-            const randomX = Math.random() * (window.innerWidth - 500);
-            const randomY = Math.random() * (window.innerHeight - 500);
+    // Append circles to SVG
+    svg.selectAll(null) // Use 'null' to ensure new circles are appended
+        .data(circlesData)
+        .enter()
+        .append("circle")
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", d => d.r)
+        .style("fill", d => d.color);
+}
 
-            const container = d3.select("body")
-                .append("div")
-                .attr("class", "svg-container")
-                .style("left", `${randomX}px`)
-                .style("top", `${randomY}px`);
+// Event listener for key presses
+document.addEventListener('keydown', function(event) {
+    if (event.code === 'Space') {
+        event.preventDefault(); // Prevent scrolling
+        createRandomCircles(svg);
+    }
 
-            // Create SVG element
-            const svg = container.append("svg")
-                .attr("width", 500)
-                .attr("height", 500);
+    // Delete the most recent set of circles if 'Backspace' or 'Delete' is pressed
+    if (event.code === 'Backspace' || event.code === 'Delete') {
+        event.preventDefault(); // Prevent navigation or default behavior
+        removeLastCircles();
+    }
+});
 
-            // Append circles to SVG
-            svg.selectAll("circle")
-                .data(data)
-                .enter()
-                .append("circle")
-                .attr("cx", d => d.x)
-                .attr("cy", d => d.y)
-                .attr("r", d => d.r || 20) // Use 'r' from data, default to 20 if undefined
-                .style("fill", (d, i) => blueShades[i % blueShades.length]);
+// Function to remove the most recently created circles
+function removeLastCircles() {
+    const circles = svg.selectAll("circle");
+    if (!circles.empty()) {
+        circles.nodes().slice(-10).forEach(circle => circle.remove());
+    }
+}
 
-            // Keep track of the created SVG container
-            activeSVGs.push(container);
-        }
+// Variables to track drawing state
+let isDrawing = false;
+let currentPath;
 
-        // Event listener for key presses
-        document.addEventListener('keydown', function(event) {
-            if (event.code === 'Space') {
-                // Prevent scrolling
-                event.preventDefault();
+// Function to start drawing
+function startDrawing(event) {
+    isDrawing = true;
+    const [x, y] = d3.pointer(event);
 
-                // Randomly pick a dataset
-                const randomDataset = datasets[Math.floor(Math.random() * datasets.length)];
-                createSVGWithData(randomDataset);
-            }
+    // Create a new path element for drawing
+    currentPath = svg.append("path")
+        .attr("d", `M ${x},${y}`) // Move to the starting point
+        .attr("stroke", "#0000FF") // Blue stroke color
+        .attr("stroke-width", 2)   // Adjust stroke width as needed
+        .attr("fill", "none")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round");
+}
 
-            // Delete the most recent SVG if 'Backspace' or 'Delete' is pressed
-            if (event.code === 'Backspace' || event.code === 'Delete') {
-                if (activeSVGs.length > 0) {
-                    const lastSVG = activeSVGs.pop();
-                    lastSVG.remove();
-                }
-            }
-        });
+// Function to update the drawing as the user drags the mouse
+function draw(event) {
+    if (!isDrawing) return;
+
+    const [x, y] = d3.pointer(event);
+
+    // Update the path data to include the new point
+    const d = currentPath.attr("d");
+    currentPath.attr("d", `${d} L ${x},${y}`); // Draw a line to the new point
+}
+
+// Function to stop drawing
+function stopDrawing() {
+    isDrawing = false;
+}
+
+// Event listeners for drawing
+svg.on("mousedown", startDrawing)
+   .on("mousemove", draw)
+   .on("mouseup", stopDrawing)
+   .on("mouseleave", stopDrawing);

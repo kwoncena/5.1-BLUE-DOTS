@@ -1,0 +1,12 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: blue;
+}
+
+svg {
+    display: block; /* Removes extra space under the SVG */
+}
