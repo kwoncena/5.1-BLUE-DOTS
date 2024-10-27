@@ -16,6 +16,13 @@ body {
     color: #00a3ff;
 }
 
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Makes the main take the full viewport height */
+}
+
 svg {
     display: block; /* Removes extra space under the SVG */
 }
