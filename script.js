@@ -28,6 +28,25 @@ function createRandomCircles(svg) {
         .style("fill", d => d.color);
 }
 
+// Add background text elements to the SVG
+const backgroundText = [
+    { text: "spacebar", x: 100, y: 200 },
+    { text: "backspace", x: 100, y: 400 },
+    { text: "mousedrag", x: 100, y: 600 }
+];
+
+// Append background text to SVG with reduced opacity
+svg.selectAll("text")
+    .data(backgroundText)
+    .enter()
+    .append("text")
+    .attr("x", d => d.x)
+    .attr("y", d => d.y)
+    .attr("opacity", 0.1)
+    .attr("font-size", 80)
+    .attr("fill", "#000")
+    .text(d => d.text);
+
 // Event listener for key presses
 document.addEventListener('keydown', function(event) {
     if (event.code === 'Space') {
